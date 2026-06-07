@@ -2,203 +2,163 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>방문 고객 DB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="고객DB">
+<title>고객DB</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif; }
-body { background: #f2f2f7; min-height: 100vh; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+:root { --accent: #1a1a1a; --green: #3B6D11; --green-bg: #EAF3DE; --border: #e8e8e8; --text: #1a1a1a; --text2: #666; --text3: #aaa; --bg: #f5f5f5; }
+body { background: var(--bg); min-height: 100vh; padding-bottom: 100px; }
 
-/* 탭 네비게이션 */
-.tab-bar { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid #e5e5e5; display: flex; }
-.tab-btn { flex: 1; padding: 14px 0; font-size: 15px; font-weight: 600; border: none; background: none; cursor: pointer; color: #aaa; border-bottom: 3px solid transparent; transition: all 0.15s; }
-.tab-btn.active { color: #222; border-bottom-color: #222; }
+/* 상단 탭 */
+.tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.tab { flex: 1; padding: 14px; text-align: center; font-size: 14px; font-weight: 500; color: var(--text3); border-bottom: 2px solid transparent; cursor: pointer; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-/* 페이지 */
-.page { display: none; padding: 20px 16px 100px; }
-.page.active { display: block; }
-
-/* 제목 */
-.page-title { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 20px; }
-
-/* 섹션 카드 */
-.form-card { background: #fff; border-radius: 14px; padding: 18px 16px; margin-bottom: 12px; border: 1px solid #e8e8e8; }
-.form-card-title { font-size: 12px; font-weight: 700; color: #999; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
-
-/* 라벨 & 입력 */
-.field-label { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px; display: block; }
-input[type=text], input[type=tel], textarea {
-  width: 100%; font-size: 16px; padding: 14px; border: 1.5px solid #e0e0e0;
-  border-radius: 10px; outline: none; background: #fafafa;
-  font-family: inherit; transition: border 0.15s;
+/* 등록 폼 */
+.form-wrap { padding: 1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.form-group { background: #fff; border-radius: 12px; padding: 14px 16px; border: 1px solid var(--border); }
+.form-label { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; display: block; }
+input[type=text], input[type=tel], textarea, select {
+  width: 100%; font-size: 16px; border: none; outline: none; background: transparent;
+  color: var(--text); padding: 0; font-family: inherit;
 }
-input[type=text]:focus, input[type=tel]:focus, textarea:focus { border-color: #888; background: #fff; }
-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+input::placeholder, textarea::placeholder { color: #ccc; }
+textarea { resize: none; min-height: 72px; line-height: 1.5; }
 
-/* 칩 */
-.chip-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
-.chip {
-  padding: 8px 16px; font-size: 14px; font-weight: 500;
-  border: 1.5px solid #ddd; border-radius: 999px; cursor: pointer;
-  background: transparent; color: #666; transition: all 0.12s;
-}
-.chip.active-teal  { background: #E1F5EE; border-color: #0F6E56; color: #085041; }
-.chip.active-purple{ background: #EEEDFE; border-color: #534AB7; color: #3C3489; }
-.chip.active-amber { background: #FAEEDA; border-color: #BA7517; color: #633806; }
+.chip-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { padding: 7px 14px; font-size: 13px; border: 1px solid var(--border); border-radius: 999px; cursor: pointer; background: #fff; color: var(--text2); transition: all 0.12s; user-select: none; }
+.chip.active-teal { background: #E1F5EE; border-color: #0F6E56; color: #085041; font-weight: 500; }
+.chip.active-purple { background: #EEEDFE; border-color: #534AB7; color: #3C3489; font-weight: 500; }
+.chip.active-amber { background: #FAEEDA; border-color: #BA7517; color: #633806; font-weight: 500; }
 
 /* 저장 버튼 */
-.save-wrap { position: fixed; bottom: 0; left: 0; right: 0; padding: 14px 16px 20px; background: #fff; border-top: 1px solid #eee; z-index: 10; }
-.save-btn {
-  width: 100%; padding: 16px; font-size: 16px; font-weight: 600;
-  background: #222; border: none; border-radius: 12px; cursor: pointer;
-  color: #fff; transition: all 0.15s;
-}
-.save-btn:active { background: #444; }
-.save-btn.saved { background: #2d7d20; }
-
-/* 뱃지 */
-.sync-row { display: flex; gap: 8px; margin-top: 10px; }
-.sync-badge { flex: 1; font-size: 12px; padding: 7px 10px; border-radius: 10px; text-align: center; border: 1px solid #eee; color: #bbb; background: #fafafa; }
-.sync-badge.ok { background: #EAF3DE; border-color: #639922; color: #3B6D11; }
+.save-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--border); padding: 12px 1rem; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.save-btn { width: 100%; padding: 15px; font-size: 16px; font-weight: 600; background: var(--accent); border: none; border-radius: 12px; cursor: pointer; color: #fff; transition: all 0.15s; }
+.save-btn.saved { background: var(--green); }
+.save-btn:active { opacity: 0.85; transform: scale(0.98); }
+.sync-row { display: flex; gap: 6px; margin-top: 8px; }
+.sync-badge { flex: 1; font-size: 11px; padding: 5px 8px; border-radius: 8px; text-align: center; border: 1px solid var(--border); color: var(--text3); background: var(--bg); }
+.sync-badge.ok { background: var(--green-bg); border-color: #639922; color: var(--green); }
 
 /* 고객 목록 */
-.list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.count-badge { font-size: 13px; background: #f0f0f0; color: #666; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
-.search-input { width: 100%; font-size: 16px; padding: 14px; border: 1.5px solid #e0e0e0; border-radius: 12px; margin-bottom: 14px; outline: none; background: #fafafa; }
-.search-input:focus { border-color: #888; background: #fff; }
-.customer-list { display: flex; flex-direction: column; gap: 10px; }
-.customer-card { background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 14px 16px; }
+.list-wrap { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.search-box { background: #fff; border-radius: 12px; padding: 12px 16px; border: 1px solid var(--border); font-size: 16px; width: 100%; outline: none; }
+.list-header { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; }
+.list-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.count-badge { font-size: 11px; background: #eee; color: var(--text2); padding: 2px 8px; border-radius: 999px; }
+.customer-card { background: #fff; border-radius: 12px; padding: 14px 16px; border: 1px solid var(--border); }
 .card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-.card-name { font-size: 15px; font-weight: 600; color: #111; }
-.card-phone { font-size: 13px; color: #888; margin-top: 2px; }
-.card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
-.tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid; font-weight: 500; }
-.card-request { font-size: 13px; color: #777; margin-top: 6px; line-height: 1.6; border-top: 1px solid #f0f0f0; padding-top: 8px; }
-.card-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
-.card-date { font-size: 12px; color: #ccc; }
-.card-property { font-size: 12px; color: #bbb; }
-.delete-btn { background: none; border: none; cursor: pointer; color: #ddd; font-size: 18px; padding: 2px; }
-.empty-state { text-align: center; padding: 4rem 1rem; color: #ccc; font-size: 14px; line-height: 1.8; }
-
-.form-group { margin-bottom: 0; }
-.form-group + .form-group { margin-top: 16px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.card-phone { font-size: 13px; color: var(--text2); margin-top: 1px; }
+.card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+.card-date { font-size: 11px; color: var(--text3); }
+.card-memo { font-size: 12px; color: var(--text2); margin-top: 8px; line-height: 1.5; }
+.delete-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 18px; padding: 4px; }
+.empty-state { text-align: center; padding: 4rem 1rem; color: var(--text3); font-size: 14px; line-height: 2; }
+.hidden { display: none; }
 </style>
 </head>
 <body>
 
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('register')">✏️ 고객 등록</button>
-  <button class="tab-btn" onclick="switchTab('list')">📋 고객 목록</button>
+  <div class="tab active" onclick="showTab('form')">✏️ 고객 등록</div>
+  <div class="tab" onclick="showTab('list')" id="list-tab">📋 목록 <span id="count-tab"></span></div>
 </div>
 
-<!-- 등록 페이지 -->
-<div class="page active" id="page-register">
-  <div class="page-title">🏠 방문 고객 DB</div>
-
-  <div class="form-card">
-    <div class="form-card-title">기본 정보</div>
+<!-- 등록 폼 -->
+<div id="tab-form">
+  <div class="form-wrap">
     <div class="form-group">
-      <label class="field-label">특징 (메모)</label>
-      <input type="text" id="inp-feature" placeholder="예: 30대 부부, 초등학생 자녀 1명" />
+      <label class="form-label">특징 / 메모</label>
+      <input type="text" id="inp-feature" placeholder="예: 30대 부부, 방 2개 필요" />
     </div>
     <div class="form-group">
-      <label class="field-label">연락처</label>
+      <label class="form-label">연락처</label>
       <input type="tel" id="inp-phone" placeholder="010-0000-0000" />
     </div>
-  </div>
-
-  <div class="form-card">
-    <div class="form-card-title">손님 구분</div>
-    <div class="chip-group" id="guest-type">
-      <button class="chip" data-val="매매">매매</button>
-      <button class="chip" data-val="전세">전세</button>
-      <button class="chip" data-val="월세">월세</button>
-      <button class="chip" data-val="임대">임대</button>
-      <button class="chip" data-val="분양">분양</button>
-    </div>
-  </div>
-
-  <div class="form-card">
-    <div class="form-card-title">문의 방법</div>
-    <div class="chip-group" id="method">
-      <button class="chip" data-val="전화">전화</button>
-      <button class="chip" data-val="방문">방문</button>
-      <button class="chip" data-val="문자">문자</button>
-      <button class="chip" data-val="카카오">카카오</button>
-      <button class="chip" data-val="네이버">네이버</button>
-    </div>
-  </div>
-
-  <div class="form-card">
-    <div class="form-card-title">관심도</div>
-    <div class="chip-group" id="interest">
-      <button class="chip" data-val="상">★★★ 상</button>
-      <button class="chip" data-val="중">★★ 중</button>
-      <button class="chip" data-val="하">★ 하</button>
-      <button class="chip" data-val="관망">관망</button>
-    </div>
-  </div>
-
-  <div class="form-card">
-    <div class="form-card-title">상세 내용</div>
     <div class="form-group">
-      <label class="field-label">문의 / 요청사항</label>
-      <textarea id="inp-request" placeholder="예: 보증금 2천 월130-140, 방 2개 이상, 주차 필수"></textarea>
+      <label class="form-label">손님구분</label>
+      <div class="chip-group" id="guest-type">
+        <button class="chip" data-val="매매">매매</button>
+        <button class="chip" data-val="전세">전세</button>
+        <button class="chip" data-val="월세">월세</button>
+        <button class="chip" data-val="임대">임대</button>
+        <button class="chip" data-val="분양">분양</button>
+      </div>
     </div>
     <div class="form-group">
-      <label class="field-label">안내 물건</label>
-      <input type="text" id="inp-property" placeholder="예: 옥정 A아파트 3층 매물" />
+      <label class="form-label">문의방법</label>
+      <div class="chip-group" id="method">
+        <button class="chip" data-val="전화">전화</button>
+        <button class="chip" data-val="방문">방문</button>
+        <button class="chip" data-val="문자">문자</button>
+        <button class="chip" data-val="카카오">카카오</button>
+        <button class="chip" data-val="네이버">네이버</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">관심도</label>
+      <div class="chip-group" id="interest">
+        <button class="chip" data-val="상">★★★ 상</button>
+        <button class="chip" data-val="중">★★ 중</button>
+        <button class="chip" data-val="하">★ 하</button>
+        <button class="chip" data-val="관망">관망</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">문의 / 요청사항</label>
+      <textarea id="inp-request" placeholder="예: 보증금 2천 월130-140, 주차 필수"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">안내물건</label>
+      <input type="text" id="inp-property" placeholder="예: 옥정 A아파트 3층" />
     </div>
   </div>
 
-</div>
-
-<!-- 목록 페이지 -->
-<div class="page" id="page-list">
-  <div class="list-header">
-    <div class="page-title" style="margin-bottom:0">고객 목록</div>
-    <span class="count-badge" id="count-badge">0명</span>
-  </div>
-  <input type="text" class="search-input" placeholder="🔍  연락처 또는 특징 검색" oninput="renderList()" id="search-inp" />
-  <div class="customer-list" id="customer-list">
-    <div class="empty-state">아직 등록된 고객이 없어요<br>등록 탭에서 첫 고객을 추가해보세요 😊</div>
+  <div class="save-wrap">
+    <button class="save-btn" id="save-btn" onclick="saveCustomer()">☁ 저장 (시트 + 노션)</button>
+    <div class="sync-row">
+      <div class="sync-badge" id="badge-sheet">📊 스프레드시트</div>
+      <div class="sync-badge" id="badge-notion">📝 노션</div>
+    </div>
   </div>
 </div>
 
-<!-- 저장 버튼 (등록 탭에서만 노출) -->
-<div class="save-wrap" id="save-wrap">
-  <button class="save-btn" id="save-btn" onclick="saveCustomer()">☁ 저장하기</button>
-  <div class="sync-row">
-    <div class="sync-badge" id="badge-sheet">📊 스프레드시트</div>
-    <div class="sync-badge" id="badge-notion">📝 노션</div>
+<!-- 목록 -->
+<div id="tab-list" class="hidden">
+  <div class="list-wrap">
+    <div class="list-header">
+      <span class="list-title">고객 목록</span>
+      <span class="count-badge" id="count-badge">0명</span>
+    </div>
+    <input type="text" class="search-box" placeholder="🔍  이름·연락처 검색" oninput="renderList()" id="search-inp" />
+    <div id="customer-list">
+      <div class="empty-state">등록된 고객이 없습니다<br>등록 탭에서 첫 고객을 추가해보세요</div>
+    </div>
   </div>
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySwuaIMVFDPp68Ly6kDWuZSgsnF-lq1WsIWoTQ6SVPXpYOPJUwxHaWlmzN1Bb6MuYN6A/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0SvjShNW50Z-zy4EIEkV-s8u-Px2fpXFbYORwHww_bx6SaOYmJa8V425Nr1gztrAmBQ/exec';
 let customers = [];
 let selectedGuestType = '', selectedMethod = '', selectedInterest = '';
 const avatarColors = [
-  { bg: '#EEEDFE', color: '#3C3489' },
-  { bg: '#E1F5EE', color: '#085041' },
-  { bg: '#E6F1FB', color: '#0C447C' },
-  { bg: '#FAEEDA', color: '#633806' },
+  { bg: '#EEEDFE', color: '#3C3489' }, { bg: '#E1F5EE', color: '#085041' },
+  { bg: '#E6F1FB', color: '#0C447C' }, { bg: '#FAEEDA', color: '#633806' },
   { bg: '#FAECE7', color: '#712B13' },
 ];
 
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  if (tab === 'register') {
-    document.querySelectorAll('.tab-btn')[0].classList.add('active');
-    document.getElementById('page-register').classList.add('active');
-    document.getElementById('save-wrap').style.display = 'block';
-  } else {
-    document.querySelectorAll('.tab-btn')[1].classList.add('active');
-    document.getElementById('page-list').classList.add('active');
-    document.getElementById('save-wrap').style.display = 'none';
-    renderList();
-  }
+function showTab(name) {
+  document.getElementById('tab-form').classList.toggle('hidden', name !== 'form');
+  document.getElementById('tab-list').classList.toggle('hidden', name !== 'list');
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0) === (name==='form')));
 }
 
 function setupChips(groupId, getter, setter, colorClass) {
@@ -212,8 +172,8 @@ function setupChips(groupId, getter, setter, colorClass) {
   });
 }
 setupChips('guest-type', () => selectedGuestType, v => selectedGuestType = v, 'active-teal');
-setupChips('method',     () => selectedMethod,    v => selectedMethod    = v, 'active-purple');
-setupChips('interest',   () => selectedInterest,  v => selectedInterest  = v, 'active-amber');
+setupChips('method', () => selectedMethod, v => selectedMethod = v, 'active-purple');
+setupChips('interest', () => selectedInterest, v => selectedInterest = v, 'active-amber');
 
 document.getElementById('inp-phone').addEventListener('input', function() {
   const d = this.value.replace(/\D/g,'');
@@ -233,7 +193,8 @@ async function saveCustomer() {
   const request  = document.getElementById('inp-request').value.trim();
   const property = document.getElementById('inp-property').value.trim();
   const date     = now();
-  const btn      = document.getElementById('save-btn');
+
+  const btn = document.getElementById('save-btn');
   const badgeSheet = document.getElementById('badge-sheet');
   const badgeNotion = document.getElementById('badge-notion');
 
@@ -242,15 +203,13 @@ async function saveCustomer() {
 
   const params = new URLSearchParams({
     date, feature, phone,
-    guestType: selectedGuestType,
-    method: selectedMethod,
-    interest: selectedInterest,
-    request, property, status: '문의'
+    guestType: selectedGuestType, method: selectedMethod,
+    interest: selectedInterest, request, property, status: '문의'
   });
 
   try {
     const res = await fetch(SCRIPT_URL + '?' + params.toString());
-    await res.json();
+    const json = await res.json();
 
     btn.classList.add('saved');
     btn.textContent = '✓ 저장 완료!';
@@ -262,22 +221,20 @@ async function saveCustomer() {
     customers.unshift({ feature, phone, guestType: selectedGuestType,
       method: selectedMethod, interest: selectedInterest,
       request, property, date, id: Date.now(), colorIdx: customers.length % 5 });
+    renderList();
     resetForm();
 
     setTimeout(() => {
       btn.classList.remove('saved');
-      btn.textContent = '☁ 저장하기';
+      btn.textContent = '☁ 저장 (시트 + 노션)';
       btn.disabled = false;
-      badgeSheet.className = 'sync-badge';
-      badgeSheet.textContent = '📊 스프레드시트';
-      badgeNotion.className = 'sync-badge';
-      badgeNotion.textContent = '📝 노션';
-    }, 2000);
+      badgeSheet.className = 'sync-badge'; badgeSheet.textContent = '📊 스프레드시트';
+      badgeNotion.className = 'sync-badge'; badgeNotion.textContent = '📝 노션';
+    }, 2500);
 
-  } catch (err) {
-    btn.textContent = '저장 실패 — 재시도';
+  } catch(err) {
+    btn.textContent = '저장 실패 — 다시 시도';
     btn.disabled = false;
-    alert('저장 실패: ' + err.message);
   }
 }
 
@@ -297,12 +254,12 @@ function renderList() {
   const q = document.getElementById('search-inp').value.trim().toLowerCase();
   const filtered = customers.filter(c =>
     (c.feature||'').toLowerCase().includes(q) || (c.phone||'').includes(q));
-  document.getElementById('count-badge').textContent = customers.length + '명';
+  const total = customers.length;
+  document.getElementById('count-badge').textContent = total + '명';
+  document.getElementById('count-tab').textContent = total > 0 ? `(${total})` : '';
   const el = document.getElementById('customer-list');
   if (filtered.length === 0) {
-    el.innerHTML = `<div class="empty-state">${customers.length === 0
-      ? '아직 등록된 고객이 없어요<br>등록 탭에서 첫 고객을 추가해보세요 😊'
-      : '검색 결과가 없습니다'}</div>`;
+    el.innerHTML = `<div class="empty-state">${total === 0 ? '등록된 고객이 없습니다<br>등록 탭에서 첫 고객을 추가해보세요' : '검색 결과가 없습니다'}</div>`;
     return;
   }
   el.innerHTML = filtered.map(c => {
@@ -321,10 +278,10 @@ function renderList() {
         <button class="delete-btn" onclick="deleteCustomer(${c.id})">🗑</button>
       </div>
       ${tags.length ? `<div class="card-tags">${tags.join('')}</div>` : ''}
-      ${c.request ? `<div class="card-request">${c.request}</div>` : ''}
-      <div class="card-meta">
+      ${c.request ? `<div class="card-memo">${c.request}</div>` : ''}
+      <div class="card-footer">
         <span class="card-date">${c.date}</span>
-        ${c.property ? `<span class="card-property">${c.property}</span>` : ''}
+        ${c.property ? `<span style="font-size:11px;color:#aaa">${c.property}</span>` : ''}
       </div>
     </div>`;
   }).join('');
