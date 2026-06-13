@@ -28,6 +28,8 @@ input[type=text], input[type=tel], textarea, select {
 }
 input::placeholder, textarea::placeholder { color: #ccc; }
 textarea { resize: none; min-height: 72px; line-height: 1.5; }
+input[type=datetime-local] { color: var(--text); }
+input[type=datetime-local]:invalid { color: #ccc; }
 
 .chip-group { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip { padding: 7px 14px; font-size: 13px; border: 1px solid var(--border); border-radius: 999px; cursor: pointer; background: #fff; color: var(--text2); transition: all 0.12s; user-select: none; }
@@ -120,6 +122,10 @@ textarea { resize: none; min-height: 72px; line-height: 1.5; }
       <label class="form-label">안내물건</label>
       <input type="text" id="inp-property" placeholder="예: 옥정 A아파트 3층" />
     </div>
+    <div class="form-group">
+      <label class="form-label">안내예정날짜</label>
+      <input type="datetime-local" id="inp-guidedate" />
+    </div>
   </div>
 
   <div class="save-wrap">
@@ -146,7 +152,7 @@ textarea { resize: none; min-height: 72px; line-height: 1.5; }
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhpAgmvFogtHQqwuyVFsQYfyndPHmn8XJbyWDq2TQGZ65S35FugL2ABgXnof4UaL5rLA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWKNNFO0EaRHneEqylwaStuL0a2MN9epFhcdx4D5EZiCbpkaq7htRLmDFQKMppRMrlTw/exec';
 let customers = [];
 let selectedGuestType = '', selectedMethod = '', selectedInterest = '';
 const avatarColors = [
@@ -192,6 +198,8 @@ async function saveCustomer() {
   const phone    = document.getElementById('inp-phone').value.trim();
   const request  = document.getElementById('inp-request').value.trim();
   const property = document.getElementById('inp-property').value.trim();
+  const guideDateRaw = document.getElementById('inp-guidedate').value;
+  const guideDate = guideDateRaw ? guideDateRaw.replace('T', ' ') : '';
   const date     = now();
 
   const btn = document.getElementById('save-btn');
@@ -204,7 +212,7 @@ async function saveCustomer() {
   const params = new URLSearchParams({
     date, feature, phone,
     guestType: selectedGuestType, method: selectedMethod,
-    interest: selectedInterest, request, property, status: '문의'
+    interest: selectedInterest, request, property, guideDate, status: '문의'
   });
 
   try {
@@ -220,7 +228,7 @@ async function saveCustomer() {
 
     customers.unshift({ feature, phone, guestType: selectedGuestType,
       method: selectedMethod, interest: selectedInterest,
-      request, property, date, id: Date.now(), colorIdx: customers.length % 5 });
+      request, property, guideDate, date, id: Date.now(), colorIdx: customers.length % 5 });
     renderList();
     resetForm();
 
@@ -239,7 +247,7 @@ async function saveCustomer() {
 }
 
 function resetForm() {
-  ['inp-feature','inp-phone','inp-request','inp-property'].forEach(id => document.getElementById(id).value = '');
+  ['inp-feature','inp-phone','inp-request','inp-property','inp-guidedate'].forEach(id => document.getElementById(id).value = '');
   selectedGuestType = selectedMethod = selectedInterest = '';
   document.querySelectorAll('.chip').forEach(b =>
     b.classList.remove('active-teal','active-purple','active-amber'));
@@ -279,6 +287,7 @@ function renderList() {
       </div>
       ${tags.length ? `<div class="card-tags">${tags.join('')}</div>` : ''}
       ${c.request ? `<div class="card-memo">${c.request}</div>` : ''}
+      ${c.guideDate ? `<div class="card-memo">📅 안내예정: ${c.guideDate}</div>` : ''}
       <div class="card-footer">
         <span class="card-date">${c.date}</span>
         ${c.property ? `<span style="font-size:11px;color:#aaa">${c.property}</span>` : ''}
